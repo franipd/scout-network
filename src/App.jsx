@@ -96,7 +96,11 @@ export default function App() {
         setPhase('idle');
         return;
       }
-      setError(err.message || 'The run failed.');
+      const hint =
+        err.name === 'ApiError'
+          ? ' — check your key and Anthropic account credit, then run again.'
+          : ' — this is an app-side issue, not your key. Run the network again.';
+      setError((err.message || 'The run failed.') + hint);
       setPhase('error');
       setLogEntries((l) => [
         ...l,
@@ -160,7 +164,7 @@ export default function App() {
 
       {error && (
         <div className="error-banner" role="alert">
-          {error} — check your key and Anthropic account credit, then run again.
+          {error}
         </div>
       )}
 

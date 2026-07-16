@@ -181,6 +181,7 @@ export async function runScoutNetwork({ apiKey, on, signal }) {
       messages: [{ role: 'user', content: scoutUserPrompt(brief, plan.matchup) }],
       useSearch: true,
       maxSearches: 4,
+      maxTokens: 4000,
     });
     track(res);
     res.searchQueries.forEach((q) => log(`${id} search → "${q}"`, 'search'));

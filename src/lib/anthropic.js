@@ -80,16 +80,25 @@ export async function callClaude({
   const data = await res.json();
   const content = Array.isArray(data.content) ? data.content : [];
 
+  // Join with '' — web-search citations split the answer into many text blocks,
+  // often mid-string inside the JSON. A '\n' separator would inject raw newlines
+  // into quoted values, which is illegal JSON.
   const text = content
     .filter((b) => b.type === 'text' && typeof b.text === 'string')
     .map((b) => b.text)
-    .join('\n')
+    .join('')
     .trim();
 
   const searchQueries = content
     .filter((b) => b.type === 'server_tool_use' && b.name === 'web_search')
     .map((b) => b.input?.query)
     .filter(Boolean);
+
+  if (data.stop_reason === 'max_tokens') {
+    throw new Error(
+      `Response was cut off at the ${maxTokens}-token limit before the agent finished — increase maxTokens for this call.`,
+    );
+  }
 
   return {
     text,
