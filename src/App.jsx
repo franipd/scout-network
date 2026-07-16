@@ -3,7 +3,9 @@ import KeyGate, { loadStoredKey } from './components/KeyGate.jsx';
 import AgentGraph from './components/AgentGraph.jsx';
 import LogPanel from './components/LogPanel.jsx';
 import Briefing from './components/Briefing.jsx';
+import SavedBriefs from './components/SavedBriefs.jsx';
 import { runScoutNetwork } from './lib/agents.js';
+import { loadBriefs, saveBrief, renameBrief, deleteBrief } from './lib/briefStore.js';
 import { MODEL } from './lib/anthropic.js';
 
 const initialNodes = () => ({
@@ -31,6 +33,8 @@ export default function App() {
   const [briefing, setBriefing] = useState(null);
   const [stats, setStats] = useState(null);
   const [error, setError] = useState('');
+  const [savedBriefs, setSavedBriefs] = useState(loadBriefs);
+  const [activeBriefId, setActiveBriefId] = useState(null);
   const abortRef = useRef(null);
 
   const patchNode = useCallback((id, patch) => {
@@ -47,6 +51,7 @@ export default function App() {
     setBriefing(null);
     setStats(null);
     setError('');
+    setActiveBriefId(null);
     abortRef.current = new AbortController();
 
     patchNode('orchestrator', { status: 'active' });
@@ -79,6 +84,12 @@ export default function App() {
       briefing: (b) => {
         patchNode('chief', { status: 'done', subtitle: 'Briefing delivered', confidence: b.prediction?.confidence });
         setBriefing(b);
+        // Auto-archive every completed run. Read the store fresh so a save
+        // never clobbers briefs from another tab, and keep the side effect
+        // out of a state updater (StrictMode double-invokes those).
+        const { entry, list } = saveBrief(b, loadBriefs());
+        setSavedBriefs(list);
+        setActiveBriefId(entry.id);
       },
     };
 
@@ -110,6 +121,22 @@ export default function App() {
   };
 
   const cancel = () => abortRef.current?.abort();
+
+  const openBrief = (id) => {
+    if (running) return;
+    const entry = savedBriefs.find((b) => b.id === id);
+    if (!entry) return;
+    setBriefing(entry.briefing);
+    setActiveBriefId(id);
+    setError('');
+  };
+
+  const handleRenameBrief = (id, name) => setSavedBriefs(renameBrief(id, name, savedBriefs));
+
+  const handleDeleteBrief = (id) => {
+    setSavedBriefs(deleteBrief(id, savedBriefs));
+    if (id === activeBriefId) setActiveBriefId(null);
+  };
 
   return (
     <div className="app">
@@ -172,6 +199,15 @@ export default function App() {
         <AgentGraph nodes={nodes} />
         <LogPanel entries={logEntries} />
       </main>
+
+      <SavedBriefs
+        briefs={savedBriefs}
+        activeId={activeBriefId}
+        disabled={running}
+        onOpen={openBrief}
+        onRename={handleRenameBrief}
+        onDelete={handleDeleteBrief}
+      />
 
       <Briefing briefing={briefing} />
 

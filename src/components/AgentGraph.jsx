@@ -1,6 +1,15 @@
 // The network diagram. Node positions are percentages of a fixed-aspect
 // stage so the SVG edges and the HTML cards always agree.
 
+import { useState } from 'react';
+
+// Cards are absolutely positioned, so unbounded content makes neighbours
+// overlap (the orchestrator's matchup details were vanishing under Scout B).
+// Collapsed cards clamp the subtitle and preview a few queries; clicking a
+// card expands it above its neighbours with everything visible.
+const QUERY_PREVIEW = 2;
+const SUBTITLE_CLAMP_HINT = 70; // chars — beyond this the clamp likely hides text
+
 const NODE_POS = {
   orchestrator: { x: 50, y: 12 },
   scoutA: { x: 16, y: 52 },
@@ -43,21 +52,46 @@ function ConfidenceBar({ value }) {
 }
 
 function Node({ id, node }) {
+  const [expanded, setExpanded] = useState(false);
   const pos = NODE_POS[id];
   const status = node?.status || 'idle';
+  const queries = node.queries || [];
+  const shownQueries = expanded ? queries : queries.slice(0, QUERY_PREVIEW);
+  const hiddenCount = queries.length - shownQueries.length;
+  const expandable =
+    queries.length > QUERY_PREVIEW || (node.subtitle || '').length > SUBTITLE_CLAMP_HINT;
+  const toggle = () => {
+    if (expandable) setExpanded((e) => !e);
+  };
   return (
     <div
-      className={`node node-${status}`}
+      className={`node node-${status}${expanded ? ' node-expanded' : ''}${expandable ? ' node-expandable' : ''}`}
       style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+      role={expandable ? 'button' : undefined}
+      tabIndex={expandable ? 0 : undefined}
+      aria-expanded={expandable ? expanded : undefined}
+      title={expandable && !expanded ? node.subtitle : undefined}
+      onClick={toggle}
+      onKeyDown={(e) => {
+        if (expandable && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          toggle();
+        }
+      }}
     >
       <div className="node-kind">{node.kind}</div>
       <div className="node-title">{node.title}</div>
-      {node.subtitle && <div className="node-sub">{node.subtitle}</div>}
-      {node.queries?.length > 0 && (
+      {node.subtitle && (
+        <div className={`node-sub${expanded ? '' : ' node-sub-clamp'}`}>{node.subtitle}</div>
+      )}
+      {shownQueries.length > 0 && (
         <ul className="node-queries">
-          {node.queries.map((q, i) => (
+          {shownQueries.map((q, i) => (
             <li key={i}>&ldquo;{q}&rdquo;</li>
           ))}
+          {hiddenCount > 0 && (
+            <li className="node-more">+{hiddenCount} more search{hiddenCount > 1 ? 'es' : ''} — click to expand</li>
+          )}
         </ul>
       )}
       <div className="node-footer">

@@ -172,6 +172,23 @@ body {
   line-height: 1.15; margin: 2px 0;
 }
 .node-sub { font-size: 12px; color: var(--muted); }
+.node-sub-clamp {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Cards are absolutely positioned — expansion lifts a card above neighbours
+   instead of letting long content vanish underneath them. */
+.node-expandable { cursor: pointer; }
+.node:hover, .node:focus-visible { z-index: 5; }
+.node:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.node-expanded {
+  z-index: 10; width: min(300px, 44%);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+}
+.node-expanded.node-active { box-shadow: 0 0 0 1px var(--accent), 0 16px 48px rgba(0, 0, 0, 0.55); }
+.node-more { color: var(--accent); font-style: italic; }
+.node-more::before { content: ''; }
 .node-queries {
   margin: 8px 0 0; padding: 8px 0 0; list-style: none;
   border-top: 1px dashed var(--line);
@@ -218,6 +235,46 @@ body {
 .log-ok .log-msg { color: var(--ok); }
 .log-warn .log-msg { color: var(--warn); }
 .log-error .log-msg { color: var(--err); }
+
+/* ── saved briefings ───────────────────────────────────────────────────── */
+.saved {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 16px; margin-bottom: 28px;
+}
+.saved-head {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+  display: flex; align-items: baseline; gap: 12px;
+}
+.saved-hint { letter-spacing: 0.04em; text-transform: none; opacity: 0.7; }
+.saved-list { list-style: none; margin: 0; padding: 0; }
+.saved-row {
+  display: flex; align-items: center; gap: 12px; padding: 7px 0;
+  border-top: 1px dashed var(--line); flex-wrap: wrap;
+}
+.saved-row:first-child { border-top: none; }
+.saved-open {
+  background: none; border: none; padding: 0; text-align: left; cursor: pointer;
+  color: var(--chalk); font-family: var(--font-body); font-size: 14px;
+}
+.saved-open:hover:not(:disabled) { color: var(--accent); text-decoration: underline; }
+.saved-open:disabled { opacity: 0.5; cursor: not-allowed; }
+.saved-open:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.saved-active .saved-open { color: var(--accent); }
+.saved-date { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-left: auto; }
+.saved-act {
+  background: none; border: 1px solid var(--line); border-radius: 6px;
+  color: var(--muted); font-family: var(--font-mono); font-size: 10px;
+  padding: 2px 8px; cursor: pointer;
+}
+.saved-act:hover:not(:disabled) { color: var(--chalk); }
+.saved-act:disabled { opacity: 0.5; cursor: not-allowed; }
+.saved-del:hover:not(:disabled) { color: var(--err); border-color: var(--err); }
+.saved-input {
+  flex: 1; min-width: 180px; background: var(--bg);
+  border: 1px solid var(--accent); border-radius: 6px;
+  color: var(--chalk); font-family: var(--font-body); font-size: 13px; padding: 4px 8px;
+}
 
 /* ── the dossier (signature element) ───────────────────────────────────── */
 .dossier {
