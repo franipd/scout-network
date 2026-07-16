@@ -1,0 +1,20 @@
+{
+  "name": "scout-network",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Multi-agent AI scouting network for the FIFA World Cup 2026 final — orchestrator-worker architecture with live web search. Bring your own Anthropic API key.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.0.7"
+  }
+}
