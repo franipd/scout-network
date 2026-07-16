@@ -27,7 +27,7 @@ export async function callClaude({
   messages,
   useSearch = false,
   maxSearches = 3,
-  maxTokens = 2500,
+  maxTokens = 4000,
   signal,
 }) {
   const started = performance.now();

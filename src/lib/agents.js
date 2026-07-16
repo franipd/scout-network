@@ -181,7 +181,7 @@ export async function runScoutNetwork({ apiKey, on, signal }) {
       messages: [{ role: 'user', content: scoutUserPrompt(brief, plan.matchup) }],
       useSearch: true,
       maxSearches: 4,
-      maxTokens: 4000,
+      maxTokens: 8000,
     });
     track(res);
     res.searchQueries.forEach((q) => log(`${id} search → "${q}"`, 'search'));
@@ -223,7 +223,7 @@ export async function runScoutNetwork({ apiKey, on, signal }) {
     system: CHIEF_SYSTEM,
     messages: [{ role: 'user', content: chiefUserPrompt(plan.matchup, reports) }],
     useSearch: false,
-    maxTokens: 3000,
+    maxTokens: 8000,
   });
   track(chiefRes);
   const briefing = parseAgentJson(chiefRes.text);
